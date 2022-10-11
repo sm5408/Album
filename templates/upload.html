@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/nav_bar.css')}}">
+<title>AIW album</title>
+</head>
+<style>
+body{
+	margin: 0;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+table{
+	background-color:plum;
+	border-radius:5px;
+	padding-bottom: 10px;
+	padding-top: 0px;
+	padding-right: 10px;
+	margin-top:20px;
+	width:70%;
+}
+
+input{
+	font-size: initial;
+}
+
+span {
+	background-color:#FFC8B4;
+	box-shadow:1px 1px 3px red;
+	margin-right:8px;
+  text-align: right;
+}
+
+div{
+  padding-top: 80px;
+  padding-left:20px
+}
+
+
+@media screen and (max-width: 400px){
+	table{
+		width:90%;
+	}
+  div{
+    padding-top: 80px;
+    padding-left:10px;
+  }
+
+}
+
+.button {
+  border:0;
+  background-color:darkviolet;
+  color:#fff;
+  border-radius:20px;
+  cursor:pointer;
+  width:90px;
+  height:30px;
+}
+
+.button:hover{
+  color:black;
+  background-color: lavender;
+}
+
+
+</style>
+<body>
+<ul class="computer" id="topnav">
+	<li><a href="../" class="active">首頁</a></li>
+	<li><a href="../album">相簿</a></li>
+	<li><a href="../upload">上傳</a></li>
+  <li><a href="../logout">登出</a></li>
+  <li style="float:right"><a href="javascript:void(0);" class="icon" onclick="myFunction()"><i class="fa fa-bars"></i></a></li>
+</ul>
+<div>
+  <h2>Upload</h2>   
+  <table>
+    <tr><td><span>{{alert}}</span></td></tr>
+    <tr><td>File Path:</td></tr>
+  <form action="" enctype='multipart/form-data' method='POST'>
+    <tr><td><input type="file" name="file[]" multiple="" accept=".jpg,.jpeg,.png,.jfif,.HEIC,.mp4,.wmv,.flv,.mov,.avi"></td>
+    <tr><td>Choose Folder:
+          <select id="folder" name=folder onchange="Choose(this.value)">
+            {% for dir in dirs %}
+              <option value={{dirs.index(dir)}}>{{dir}}</option>
+            {% endfor %}
+          </select>
+    </td></tr>
+    <tr><td><input type="hidden" id="foldername" name="foldername" value=""></td></tr>
+    <tr><td><input type="submit" value="upload" name="upload"></td></tr>
+  </form>
+</table>
+  
+</div>
+<script>
+function Choose(number){
+    var choose=document.getElementById("folder").innerHTML;
+    if(number==1)
+    {
+      document.getElementById("foldername").type="text";
+    }
+}
+
+function myFunction() {
+  var x = document.getElementById("topnav");
+  if (x.className === "computer") {
+    x.className = "phone";
+  } else {
+    x.className = "computer";
+  }
+}
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/nav_bar.css')}}">
+<title>AIW album</title>
+</head>
+<style>
+body{
+	margin: 0;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+table{
+	background-color:plum;
+	border-radius:5px;
+	padding-bottom: 10px;
+	padding-top: 15px;
+	padding-right: 10px;
+	margin-top:20px;
+	width:70%;
+}
+
+input{
+	font-size: initial;
+}
+
+span {
+	background-color:#FFC8B4;
+	box-shadow:1px 1px 3px red;
+	margin-right:8px;
+}
+
+@media screen and (max-width: 400px){
+	table{
+		width:90%;
+	}
+}
+
+.button {
+  border:0;
+  background-color:darkviolet;
+  color:#fff;
+  border-radius:20px;
+  cursor:pointer;
+  width:90px;
+  height:30px;
+}
+
+.button:hover{
+  color:black;
+  background-color: lavender;
+}
+</style>
+<body onload="screen()">
+<ul class="computer" id="topnav">
+	<li><a href="../" class="active">首頁</a></li>
+	<li><a href="../register">註冊</a></li>
+	<li><a href="../login">登入</a></li>
+	<li style="float:right"><a href="javascript:void(0);" class="icon" onclick="myFunction()"><i class="fa fa-bars"></i></a></li>
+</ul>
+<form method="post">
+<div style="padding-top: 100px">    
+  <table align="center">
+    <tr>
+    <td colspan="2" align="right"><span>{{alert}}</span></td>
+    </tr>
+    <tr>
+      <th width="15%">account</th>
+      <td><input class="w3-input w3-border w3-round-large" type='text' name="userid" value={{id}}></td>
+    </tr>
+    <tr>
+      <th>password</th>
+      <td><input class="w3-input w3-border w3-round-large" type='password' name="userpw" value={{pw}}></td>
+    </tr>
+    <tr>
+      <td colspan="2" align="right"><input id="bodywidth" type="hidden" name="bodywidth"><input class="button" value="登入" type='submit' name="send"></td>
+    </tr>
+  </table>
+</div>
+</form>
+<script>
+function myFunction() {
+  var x = document.getElementById("topnav");
+  if (x.className === "computer") {
+    x.className = "phone";
+  } else {
+    x.className = "computer";
+  }
+}
+function screen(){
+    var w=document.body.clientWidth;
+  document.getElementById("bodywidth").value=w;
+}
+</script>
+
+
+</body>
+</html>

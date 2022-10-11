@@ -1,0 +1,80 @@
+ul.computer{
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	background-color: thistle;
+	position: fixed;
+	width:100%;
+}
+
+ul.computer li{float: left;}
+ul.computer li a{
+	display: block;
+	color: black;
+	padding: 8px 16px;
+	text-align: center;
+	text-decoration: none;
+}
+
+ul.computer li a.active{
+	color: lavender;
+	background-color: darkmagenta;
+}
+
+ul.computer li a:hover:not(.active)
+{
+	background-color: darkviolet;
+	color: white;
+}
+
+ul.computer li a.icon{display: none;}
+
+@media screen and (max-width: 400px)
+{
+	ul.computer li a:not(.active) {
+		display: none;
+	}
+	ul.computer li a.icon{
+		float: right;
+		display: inline-block;	
+	}
+}
+
+@media screen and (max-width: 400px)
+{
+	ul.phone {
+		list-style-type: none;
+		margin: 0;
+		padding: 0;
+		overflow: hidden;
+		background-color: thistle;
+		position: fixed;
+		width:100%;
+	}
+
+	ul.phone li a{
+		display: block;
+		color: black;
+		padding: 8px 16px;
+		text-align: left;
+		text-decoration: none;
+	}
+
+	ul.phone li a.active{
+		color: lavender;
+		background-color: darkmagenta;
+	}
+
+	ul.phone li a:hover:not(.active)
+	{
+		background-color: darkviolet;
+		color: white;
+	}
+
+	ul.phone li a.icon{
+		position: absolute;
+		right: 0;
+		top: 0;
+	}
+}

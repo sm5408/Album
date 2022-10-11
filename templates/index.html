@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/nav_bar.css')}}">
+<title>AIW album</title>
+</head>
+<style>
+body{
+	margin: 0;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+
+
+
+</style>
+<body>
+
+<ul class="computer" id="topnav">
+	<li><a href="../" class="active">首頁</a></li>
+	{% if user in USERS %}
+  <li><a href="../album">相簿</a></li>
+	<li><a href="../upload">上傳</a></li>
+	<li><a href="../logout">登出</a></li>
+	{% else %}
+	<li><a href="../register">註冊</a></li>
+	<li><a href="../login">登入</a></li>
+	{% endif %}
+	<li style="float:right"><a href="javascript:void(0);" class="icon" onclick="myFunction()"><i class="fa fa-bars"></i></a></li>
+</ul>
+{% if user in USERS %}
+<div style="padding-top: 80px;padding-left:20px">
+  <h2>Hello, {{user}}!</h2>
+  <p>今天又是個美好的一天</p>
+  <p>你可以選擇看過往的照片影片</p>
+  <p>又或者可以上傳新的照片和影片喔！</p>
+{% else %}
+<div style="padding-top: 80px;padding-left:20px">
+  <h2>Hello,Stranger!</h2>
+  <p>今天是個美好的一天</p>
+  <p>你想要自己的個人相簿嗎？</p>
+  <p>在這裡你可以註冊後上傳自己的照片影片喔！</p>
+{% endif %}
+	
+<script>
+function myFunction() {
+  var x = document.getElementById("topnav");
+  if (x.className === "computer") {
+    x.className = "phone";
+  } else {
+    x.className = "computer";
+  }
+}
+</script>
+</div>
+</body>
+</html>
