@@ -214,7 +214,7 @@ def album():
 			return render_template('album.html',dirs=dirs,colspan=colspan, \
 				filefolder=session.get('now_folder'),files=dict2,username=session.get('username'),edit=session.get('edit'))
 
-		elif request.values['edit'] == '刪除':
+		elif request.values['edit'] == 'FR': #'刪除':
 			flist = request.form.getlist("delete_box")
 			for f in flist:
 				muru=f[:f.index('-')]
@@ -224,8 +224,11 @@ def album():
 					os.remove(os.path.join(basepath,session.get('username'),muru,'video',name))
 					os.remove(os.path.join(basepath,session.get('username'),muru,'album','video',name[:-4]+'.jpg'))
 				else:
-					os.remove(os.path.join(basepath,session.get('username'),muru,'photo',name))
-					os.remove(os.path.join(basepath,session.get('username'),muru,'album','photo',name))
+					print('selected = ',name)
+					return 'FR testing'
+
+					# os.remove(os.path.join(basepath,session.get('username'),muru,'photo',name))
+					# os.remove(os.path.join(basepath,session.get('username'),muru,'album','photo',name))
 
 			dict1={}
 			for dir in dirs:
