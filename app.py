@@ -5,6 +5,17 @@ import numpy as np
 app=Flask(__name__)
 app.secret_key= b'_5#y2L"F4Q8z]/'
 
+@app.route('/fr/',methods=['GET','POST'])
+def fr():
+
+	if request.method == 'POST':
+		if request.values['send'] == 'run':
+			print('get into fr script')
+			return 'FR testing...'
+
+		return redirect(url_for('index'))
+	return render_template('fr.html')
+
 def video_photo(video_path,out_path):
 
 	cap = cv2.VideoCapture(video_path)
