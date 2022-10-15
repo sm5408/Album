@@ -1,20 +1,31 @@
 from flask import Flask,render_template,url_for,redirect,request,session
 import json,os,cv2,shutil
 import numpy as np
+import argparse
+import time
+
+from face_detection import init_FD, inference_FD
+from face_recognition import init_FR, feature_extraction, compare_feature
+
 
 app=Flask(__name__)
 app.secret_key= b'_5#y2L"F4Q8z]/'
 
-@app.route('/fr/',methods=['GET','POST'])
-def fr():
-
+@app.route('/enroll/',methods=['GET','POST'])
+def enroll():
 	if request.method == 'POST':
-		if request.values['send'] == 'run':
-			print('get into fr script')
-			return 'FR testing...'
+		if request.values['send'] == '確認':
+			print('enroll face!')
+			return redirect(url_for('album'))
+	return render_template('enroll.html')
 
-		return redirect(url_for('index'))
-	return render_template('fr.html')
+@app.route('/fr/<output>',methods=['GET','POST'])
+def fr(output):
+	if request.method == 'POST':
+		if request.values['send'] == '確認':
+			print('get into fr process!!')
+			return redirect(url_for('album'))
+	return render_template('fr.html', output=output)
 
 def video_photo(video_path,out_path):
 
@@ -171,6 +182,47 @@ def upload():
 		return redirect(url_for('upload'))
 	return render_template('upload.html',dirs=dirs)
 
+
+def inference_procedure(args, fd_model, fr_backbone, fr_head, image, device):
+	# FD for image
+	detection_time = time.time()
+	ROI_img = inference_FD(fd_model, image, args)
+	detection_time = time.time() - detection_time
+	print("FD time:", detection_time)
+
+	if ROI_img is None:
+		return None, "face not detected"
+
+	# cv2.imshow("ROI_img", ROI_img)
+	# cv2.waitKey(1)
+
+	# FR for image
+	recognition_time = time.time()
+	features = feature_extraction(fr_backbone, fr_head, ROI_img, device)
+	recognition_time = time.time() - recognition_time
+	print("FR time:", recognition_time)
+
+	return features, ""
+
+
+def registerFR(feature, register_id, enroll_dir):
+	save_path = os.path.join(enroll_dir, register_id + ".npy")
+	np.save(save_path, feature)
+
+
+def identify(enroll_path_list, id_feature, args):
+	best_score = -100
+	best_ID = None
+	for enroll_path in enroll_path_list:
+		enroll_feature = np.load(os.path.join("enroll", enroll_path))
+		score = compare_feature(enroll_feature, id_feature)
+		if score > args.fr_threshold and score > best_score:
+			best_score = score
+			best_ID = enroll_path.split("/")[-1].split(".npy")[0]
+
+	return best_score, best_ID
+
+
 @app.route('/album/', methods=['POST', 'GET'])
 def album():
 
@@ -214,6 +266,45 @@ def album():
 			return render_template('album.html',dirs=dirs,colspan=colspan, \
 				filefolder=session.get('now_folder'),files=dict2,username=session.get('username'),edit=session.get('edit'))
 
+		elif request.values['edit'] == '刪除':
+			flist = request.form.getlist("delete_box")
+			for f in flist:
+				muru = f[:f.index('-')]
+				name = f[f.index('-') + 1:f.index('#')]
+				format = f[f.index('#') + 1:]
+				if format == "video":
+					os.remove(os.path.join(basepath, session.get('username'), muru, 'video', name))
+					os.remove(
+						os.path.join(basepath, session.get('username'), muru, 'album', 'video', name[:-4] + '.jpg'))
+				else:
+					image_path = os.path.join(basepath, session.get('username'), muru, 'photo', name)
+					os.remove(os.path.join(basepath,session.get('username'),muru,'photo',name))
+					os.remove(os.path.join(basepath,session.get('username'),muru,'album','photo',name))
+
+			dict1 = {}
+			for dir in dirs:
+				if dir == "ALL" or dir == '':
+					continue
+				dict1[dir] = {'photo': [], 'video': []}
+				path = os.path.join(basepath, session.get('username'), dir, 'photo')
+				for lists in os.listdir(path):
+					dict1[dir]['photo'].append(lists)
+
+				path = os.path.join(basepath, session.get('username'), dir, 'video')
+				for lists in os.listdir(path):
+					dict1[dir]['video'].append(lists)
+				if dict1[dir] == {'photo': [], 'video': []}:
+					shutil.rmtree(os.path.join(basepath, session.get('username'), dir))
+					del dict1[dir]
+			dirs = os.listdir(os.path.join(basepath, session.get('username')))
+			dirs.insert(0, 'ALL')
+			dirs.insert(0, '')
+			if session.get('now_folder') not in dirs:
+				session['now_folder'] = dirs[2:]
+
+			return render_template('album.html', dirs=dirs, colspan=colspan, username=session.get('username'), \
+								   filefolder=session.get('now_folder'), files=dict1, edit=session.get('edit'))
+
 		elif request.values['edit'] == 'FR': #'刪除':
 			flist = request.form.getlist("delete_box")
 			for f in flist:
@@ -223,12 +314,37 @@ def album():
 				if format == "video":
 					os.remove(os.path.join(basepath,session.get('username'),muru,'video',name))
 					os.remove(os.path.join(basepath,session.get('username'),muru,'album','video',name[:-4]+'.jpg'))
-				else:
-					print('selected = ',name)
 					return 'FR testing'
+				else:
+					image_path = os.path.join(basepath, session.get('username'), muru,'photo', name)
+					print("selected:", image_path)
+					image = cv2.imread(image_path)
+					if image is None:
+						return 'image not found'
 
-					# os.remove(os.path.join(basepath,session.get('username'),muru,'photo',name))
-					# os.remove(os.path.join(basepath,session.get('username'),muru,'album','photo',name))
+					print(image.shape)
+					# identify
+					# FD and FR
+					feature, msg = inference_procedure(args, fd_model, fr_backbone, fr_head, image, device)
+					if feature is None:
+						return "image:{}".format(msg)
+					feature = feature.reshape(-1)
+					if not os.path.isdir(args.enroll_dir):
+						os.mkdir(args.enroll_dir)
+					enroll_path_list = os.listdir(args.enroll_dir)
+					best_score, best_ID = identify(enroll_path_list, feature, args)
+
+					if best_ID is None:
+						# register
+						registerFR(feature, name[:-4], args.enroll_dir)
+						# return "register:{}".format(name[:-4])
+						return redirect(url_for('enroll'))
+					else:
+						print("best score:", best_score)
+						# return "identity:{} confidence:{}".format(best_ID, best_score)
+						# return "identity:{}".format(best_ID)
+						temp = "Best ID=" + str(best_ID)+" ; Best Score=" + str(best_score)
+						return redirect(url_for('fr', output=temp))
 
 			dict1={}
 			for dir in dirs:
@@ -291,5 +407,32 @@ def stream(folder,name):
 		return redirect(url_for('stream',folder=folder,name=name))
 	return render_template('stream.html',dirs=dirs,name=name,folder=folder,fileName=fileName,username=session.get('username'))
 
+
 if __name__ == '__main__':
+	parser = argparse.ArgumentParser(description='Test')
+	parser.add_argument('--fd_model_path', default='',
+						type=str, help='the path of face detection model')
+	parser.add_argument('--fr_backbone_path', default='',
+						type=str, help='the path of face recognition backbone')
+	parser.add_argument('--fr_model_path', default='',
+						type=str, help='the path of face recognition head')
+	parser.add_argument('--enroll_dir', default='enroll',
+						type=str, help='the path of stored enroll features')
+	parser.add_argument('--long_side', default=320, type=int,
+						help='when origin_size is false, long_side is scaled size(320 or 640 for long side)')
+	parser.add_argument('--confidence_threshold', default=0.3, type=float, help='confidence_threshold for fd')
+	parser.add_argument('--top_k', default=2000, type=int, help='top_k')
+	parser.add_argument('--nms_threshold', default=0.3, type=float, help='nms_threshold')
+	parser.add_argument('--keep_top_k', default=1000, type=int, help='keep_top_k')
+	parser.add_argument('--fr_threshold', default=-1.4387, type=float, help='fr threshold from IJBC 11 1e-4')
+
+	args = parser.parse_args()
+
+	# load FD model
+	fd_model = init_FD(args)
+	# load FR model
+	fr_backbone, fr_head, device = init_FR(args)
+	fr_backbone.eval()
+	fr_head.eval()
+
 	app.run(host='0.0.0.0',port='8000',debug=True)
